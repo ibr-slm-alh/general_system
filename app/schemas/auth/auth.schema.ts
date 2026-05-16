@@ -15,4 +15,15 @@ export const registerSchema = z
     message: "passwords dont match",
   });
 
+export const loginSchema = z.object({
+  email: z
+    .string({ required_error: "Email is required" })
+    .email("Please enter a valid email address"),
+
+  password: z
+    .string({ required_error: "Password is required" })
+    .min(8, "Password must be at least 8 characters"),
+});
+
+export type loginSchema = z.infer<typeof loginSchema>;
 export type RegisterSchema = z.output<typeof registerSchema>;

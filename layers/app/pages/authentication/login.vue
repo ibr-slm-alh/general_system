@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RegisterForm from "~/components/auth/RegisterForm.vue";
+import LoginForm from "~/components/auth/LoginForm.vue";
 
 definePageMeta({
   layout: "auth",
@@ -11,7 +11,7 @@ definePageMeta({
     mobile:  full viewport height, no padding (card is full-width edge-to-edge)
     sm+:     centered with padding, card floats in the middle
   -->
-  <div class="flex flex-col items-center justify-center sm:p-4">
-    <RegisterForm />
+  <div>
+    <LoginForm />
   </div>
 </template>
