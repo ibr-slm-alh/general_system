@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRoleStore } from "~/stores/roles/roleStore";
+import { useRoleStore } from "~~/layers/authorization/app/store/roleStore";
 import type { Role, Permission } from "~/types/roles";
 
 const props = defineProps<{

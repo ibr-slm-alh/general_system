@@ -2,7 +2,7 @@ import type { ApiResponse, Role } from "~/types/roles";
 import type {
   RoleSchema,
   AssignPermissionsSchema,
-} from "~/schemas/roles/role.schema";
+} from "~~/layers/authorization/app/schemas/roleSchema";
 
 export const roleService = {
   async getAll(): Promise<ApiResponse<Role[]>> {

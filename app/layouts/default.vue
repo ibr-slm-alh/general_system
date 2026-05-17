@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { useAuthStore } from "~/stores/auth/authStore";
+import { useAuthStore } from "~~/layers/authentication/app/stores/authStore";
 
 // sidebar open state — starts closed on mobile, open on desktop
 const open = ref(false);

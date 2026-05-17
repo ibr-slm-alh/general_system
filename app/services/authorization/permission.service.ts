@@ -1,5 +1,5 @@
 import type { ApiResponse, Permission } from "~/types/roles";
-import type { PermissionSchema } from "~/schemas/roles/role.schema";
+import type { PermissionSchema } from "~~/layers/authorization/app/schemas/roleSchema";
 
 export const permissionService = {
   async getAll(): Promise<ApiResponse<Permission[]>> {

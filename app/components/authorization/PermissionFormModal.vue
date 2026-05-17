@@ -3,7 +3,7 @@ import type { FormSubmitEvent } from "@nuxt/ui";
 import {
   permissionSchema,
   type PermissionSchema,
-} from "../../schemas/roles/role.schema";
+} from "../../../layers/authorization/app/schemas/roleSchema";
 import type { Permission } from "~/types/roles";
 
 const props = defineProps<{

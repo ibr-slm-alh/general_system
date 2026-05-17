@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { roleSchema, type RoleSchema } from "~/schemas/roles/role.schema";
+import {
+  roleSchema,
+  type RoleSchema,
+} from "~~/layers/authorization/app/schemas/roleSchema";
 import type { Role } from "~/types/roles";
 
 const props = defineProps<{
