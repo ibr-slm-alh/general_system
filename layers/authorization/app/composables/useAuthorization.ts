@@ -13,13 +13,21 @@ export function useAuthorization() {
 
   async function createRole(payload: createRolePayload) {
     const response = await useAuthorizationService().createRole(payload);
-
+    toast.add({
+      title: "Success",
+      description: "Your action was completed successfully.",
+      color: "success",
+    });
     store.setRoles([...(store.roles ?? []), response.data]);
   }
 
   async function updateRole(payload: Partial<Role>, id: number) {
     const response = await useAuthorizationService().updateRole(payload, id);
-
+    toast.add({
+      title: "Success",
+      description: "Your action was completed successfully.",
+      color: "success",
+    });
     store.setRoles(
       (store.roles ?? []).map((role) =>
         role.id === id ? response.data : role,
@@ -46,7 +54,11 @@ export function useAuthorization() {
 
   async function deleteRole(id: number) {
     await useAuthorizationService().deleteRole(id);
-
+    toast.add({
+      title: "Success",
+      description: "Your action was completed successfully.",
+      color: "success",
+    });
     store.setRoles((store.roles ?? []).filter((role) => role.id !== id));
   }
 

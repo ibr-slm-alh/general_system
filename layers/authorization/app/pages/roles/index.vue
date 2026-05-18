@@ -14,7 +14,6 @@ const {
   getPermissions,
   allPermissions,
   updateRolePermission,
-  loading,
 } = useAuthorization();
 
 /* ---------------- MODALS ---------------- */
@@ -22,6 +21,7 @@ const isCreateModalOpen = ref(false);
 const isEditRoleModalOpen = ref(false);
 const isEditPermissionsModalOpen = ref(false);
 const isDeleteOpen = ref(false);
+const loading = ref(false);
 
 /* ---------------- STATE ---------------- */
 const current_role = ref<any>({});
@@ -29,7 +29,8 @@ const permissions = ref<string[]>([]);
 const selectedRoleId = ref<number | null>(null);
 
 /* ---------------- AUTH STATE ---------------- */
-const hasAccess = ref(true);
+const hasAccess = ref(false);
+
 const alertMessage = ref("");
 
 /* ---------------- CREATE ROLE ---------------- */
@@ -58,6 +59,7 @@ onMounted(async () => {
 
 /* ---------------- CREATE ---------------- */
 const create = async () => {
+  loading.value = true;
   await createRole(newRole.value);
 
   newRole.value = {
@@ -65,6 +67,7 @@ const create = async () => {
     display_name: "",
   };
 
+  loading.value = false;
   isCreateModalOpen.value = false;
 };
 
@@ -84,7 +87,7 @@ const openEditPermissionsModal = (role: any) => {
 /* ---------------- UPDATE ROLE INFO ---------------- */
 const updateRoleInfo = async () => {
   if (!current_role.value.id) return;
-
+  loading.value = true;
   await updateRole(
     {
       name: current_role.value.name,
@@ -92,21 +95,21 @@ const updateRoleInfo = async () => {
     },
     current_role.value.id,
   );
-
+  loading.value = false;
   isEditRoleModalOpen.value = false;
 };
 
 /* ---------------- UPDATE PERMISSIONS ---------------- */
 const updatePermissions = async () => {
   if (!current_role.value.id) return;
-
+  loading.value = true;
   await updateRolePermission(
     {
       permissions: permissions.value,
     },
     current_role.value.id,
   );
-
+  loading.value = false;
   isEditPermissionsModalOpen.value = false;
 };
 
@@ -118,9 +121,9 @@ const openDeleteModal = (id: number) => {
 
 const confirmDeleteAction = async () => {
   if (!selectedRoleId.value) return;
-
+  loading.value = true;
   await deleteRole(selectedRoleId.value);
-
+  loading.value = false;
   selectedRoleId.value = null;
   isDeleteOpen.value = false;
 };
@@ -241,7 +244,9 @@ const columns: TableColumn<any>[] = [
               <UInput v-model="current_role.display_name" class="w-full" />
             </UFormField>
 
-            <UButton block @click="updateRoleInfo"> Update Role </UButton>
+            <UButton block :loading="loading" @click="updateRoleInfo">
+              Update Role
+            </UButton>
           </div>
         </template>
       </UModal>
@@ -262,8 +267,10 @@ const columns: TableColumn<any>[] = [
                 class="w-full"
               />
             </UFormField>
-
-            <UButton block @click="updatePermissions">
+            <UFormField label="Selected Permissions">
+              <UInputTags v-model="permissions" class="w-full" />
+            </UFormField>
+            <UButton block :loading="loading" @click="updatePermissions">
               Update Permissions
             </UButton>
           </div>
@@ -282,7 +289,11 @@ const columns: TableColumn<any>[] = [
               Cancel
             </UButton>
 
-            <UButton color="error" @click="confirmDeleteAction">
+            <UButton
+              color="error"
+              :loading="loading"
+              @click="confirmDeleteAction"
+            >
               Delete
             </UButton>
           </div>
