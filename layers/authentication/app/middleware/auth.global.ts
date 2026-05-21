@@ -1,4 +1,6 @@
 export default defineNuxtRouteMiddleware((to) => {
+  const { $api } = useNuxtApp();
+
   const token = useCookie("auth_token");
 
   const isLoggedIn = !!token.value;

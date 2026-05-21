@@ -1,48 +1,66 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 import { useAuthStore } from "~~/layers/authentication/app/stores/authStore";
+import * as locales from "@nuxt/ui/locale";
 
-// sidebar open state — starts closed on mobile, open on desktop
+const { t, locale, setLocale } = useI18n();
+console.log("Locale ###########3", locale);
+// ─── RTL detection ────────────────────────────────────────────
+const isRTL = computed(() => locale.value === "ar");
+
+// Sync <html dir="..."> whenever locale changes
+watch(
+  isRTL,
+  (rtl) => {
+    if (import.meta.client) {
+      document.documentElement.dir = rtl ? "rtl" : "ltr";
+      document.documentElement.lang = locale.value;
+    }
+  },
+  { immediate: true },
+);
+
+// ─── Sidebar state ────────────────────────────────────────────
 const open = ref(false);
 const isMobile = ref(false);
 
 onMounted(() => {
   const mq = window.matchMedia("(max-width: 767px)");
   isMobile.value = mq.matches;
-  // on desktop open sidebar by default
   open.value = !mq.matches;
 
   mq.addEventListener("change", (e) => {
     isMobile.value = e.matches;
-    if (!e.matches) open.value = true;
-    else open.value = false;
+    open.value = !e.matches;
   });
 });
 
+// ─── Auth ─────────────────────────────────────────────────────
 const authStore = useAuthStore();
-
 const logout = async () => {
   await authStore.logoutRequest();
 };
 
+// ─── Navigation items ─────────────────────────────────────────
 const items: NavigationMenuItem[] = [
   {
-    label: "Home",
+    label: t("home"),
+    to: "/",
     icon: "i-lucide-house",
     active: true,
   },
   {
-    label: "Inbox",
-    icon: "i-lucide-inbox",
+    label: "Profile",
+    icon: "lucide:circle-user-round",
     badge: "4",
   },
   {
-    label: "Register",
-    to: "/authentication/register",
-    icon: "i-lucide-users",
+    label: t("roles"),
+    to: "/roles",
+    icon: "carbon-user-role",
   },
   {
-    label: "Logout",
+    label: t("logout"),
     icon: "i-lucide-log-out",
     class: "text-red-400 rounded hover:bg-red-50 font-semibold",
     async onSelect() {
@@ -51,33 +69,46 @@ const items: NavigationMenuItem[] = [
   },
 ];
 
-// bottom nav items (mobile only) — subset of sidebar items
 const bottomNavItems = [
-  { label: "Home", icon: "i-lucide-house", to: "/" },
-  { label: "Inbox", icon: "i-lucide-inbox", to: "/inbox", badge: "4" },
-  { label: "Users", icon: "i-lucide-users", to: "/authentication/register" },
-  { label: "Logout", icon: "i-lucide-log-out", action: logout },
+  { label: t("Home"), icon: "i-lucide-house", to: "/" },
+  { label: t("Inbox"), icon: "i-lucide-inbox", to: "/inbox", badge: "4" },
+  { label: t("Users"), icon: "i-lucide-users", to: "/authentication/register" },
+  { label: t("Logout"), icon: "i-lucide-log-out", action: logout },
 ];
+
+// ─── Sidebar side: right in RTL, left in LTR ─────────────────
+// USidebar supports a `side` prop ("left" | "right")
+const sidebarSide = computed(() => locales[locale.value].dir);
 </script>
 
 <template>
-  <div class="flex flex-col flex-1">
-    <!-- ─── Top header ─────────────────────────────────────────── -->
+  <!--
+    dir is set on <html> via the watcher above.
+    The `dir` attribute here covers SSR hydration.
+  -->
+  <div class="flex flex-col flex-1" :dir="locale == 'en' ? 'ltr' : 'rtl'">
+    <!-- ─── Top header ──────────────────────────────────────── -->
     <UHeader :ui="{ container: 'px-4!' }">
+      <!-- Language toggle -->
+      <UButton
+        :label="locale == 'en' ? 'العربية' : 'English'"
+        @click="setLocale(locale == 'en' ? 'ar' : 'en')"
+      />
+      <!-- Sidebar toggle (desktop) — flips side via the sidebar state -->
       <template #toggle>
-        <!-- only show sidebar toggle on md+ -->
         <UButton
           class="hidden md:flex"
           icon="i-lucide-panel-left"
           color="neutral"
           variant="ghost"
+          :class="{ 'scale-x-[-1]': isRTL }"
           aria-label="Toggle sidebar"
           @click="open = !open"
         />
       </template>
 
+      <!-- Mobile hamburger -->
       <template #right>
-        <!-- mobile: show hamburger that opens a drawer/sheet -->
         <UButton
           class="flex md:hidden"
           icon="i-lucide-menu"
@@ -89,15 +120,18 @@ const bottomNavItems = [
       </template>
     </UHeader>
 
-    <!-- ─── Body (sidebar + content) ─────────────────────────── -->
+    <!-- ─── Body ────────────────────────────────────────────── -->
     <div class="flex flex-1 min-h-0">
       <!--
-        Sidebar:
-        - mobile:  slides in as an overlay drawer (collapsible="offcanvas" behaviour)
-        - md+:     persistent collapsible sidebar
+        USidebar:
+        - `side` prop controls which edge the sidebar lives on.
+        - Switches to "right" in Arabic (RTL) and "left" in English (LTR).
+        - Mobile: offcanvas overlay from the correct side.
+        - Desktop: icon-collapsible persistent sidebar.
       -->
       <USidebar
         v-model:open="open"
+        :side="sidebarSide"
         :collapsible="isMobile ? 'offcanvas' : 'icon'"
         :ui="{
           gap: 'h-[calc(100%-var(--ui-header-height))]',
@@ -112,27 +146,19 @@ const bottomNavItems = [
         />
       </USidebar>
 
-      <!-- ─── Page content ──────────────────────────────────── -->
-      <!--
-        mobile:  add bottom padding so content isn't hidden behind bottom nav
-        md+:     normal padding
-      -->
+      <!-- ─── Page content ───────────────────────────────── -->
       <div class="flex-1 p-4 pb-20 md:pb-4 overflow-y-auto">
         <slot />
       </div>
     </div>
 
-    <!-- ─── Bottom navigation (mobile only) ───────────────────── -->
-    <!--
-      Fixed to the bottom of the viewport on mobile.
-      Hidden on md+ because the sidebar handles navigation there.
-    -->
+    <!-- ─── Bottom navigation (mobile only) ─────────────────── -->
     <nav
       class="fixed bottom-0 inset-x-0 z-50 flex md:hidden h-16 bg-primary-50 border-t border-default safe-area-pb"
       aria-label="Mobile navigation"
     >
       <template v-for="item in bottomNavItems" :key="item.label">
-        <!-- items with a route -->
+        <!-- Items with a route -->
         <NuxtLink
           v-if="item.to"
           :to="item.to"
@@ -141,10 +167,9 @@ const bottomNavItems = [
         >
           <span class="relative">
             <UIcon :name="item.icon" class="h-5 w-5" />
-            <!-- badge -->
             <span
               v-if="item.badge"
-              class="absolute -top-1 -right-2 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-medium leading-4 text-center"
+              class="absolute -top-1 -end-2 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-medium leading-4 text-center"
             >
               {{ item.badge }}
             </span>
@@ -152,7 +177,7 @@ const bottomNavItems = [
           <span class="text-[10px] font-medium">{{ item.label }}</span>
         </NuxtLink>
 
-        <!-- items with an action (logout) -->
+        <!-- Items with an action (logout) -->
         <button
           v-else-if="item.action"
           class="flex flex-1 flex-col items-center justify-center gap-0.5 text-red-400 hover:text-red-500 transition-colors"

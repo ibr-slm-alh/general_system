@@ -1,0 +1,19 @@
+{
+  "roles": "الأدوار",
+  "role": "الدور",
+  "role_name": "الاسم",
+  "create_role": "إنشاء دور",
+  "update_role": "تعديل الدور",
+  "delete_role": "حذف الدور",
+  "display_name": "اسم الطباعة",
+  "permissions": "القيود",
+  "update_permissions": "تعديل القيود",
+  "edit": "تعديل",
+  "create": "انشاء",
+  "delete": "حذف",
+  "confirm_delete": "تأكيد الحذف",
+  "cancel": "إلغاء",
+  "home": "الرئيسية",
+  "logout": "تسجيل الخروج",
+  "roles_page": "صفحة الأدوار"
+}

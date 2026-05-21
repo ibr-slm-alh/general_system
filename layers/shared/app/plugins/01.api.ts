@@ -17,6 +17,12 @@ export default defineNuxtPlugin(() => {
         };
       }
     },
+
+    async onResponseError({ response }) {
+      if (response.status === 401) {
+        await navigateTo("/authentication/login");
+      }
+    },
   });
 
   return {

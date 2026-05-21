@@ -1,12 +1,12 @@
 declare module "#app" {
   interface NuxtApp {
-    $api: typeof $fetch;
+    $api: typeof $api;
   }
 }
 
 declare module "vue" {
   interface ComponentCustomProperties {
-    $api: typeof $fetch;
+    $api: typeof $api;
   }
 }
 

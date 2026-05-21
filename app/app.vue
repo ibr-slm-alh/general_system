@@ -1,11 +1,23 @@
 <script setup>
+import * as locales from "@nuxt/ui/locale";
+
+const { locale } = useI18n();
+
+const dir = computed(() => locales[locale.value].dir); // 'rtl' أو 'ltr'
+
+useHead({
+  htmlAttrs: {
+    lang: computed(() => locales[locale.value].code),
+    dir, // ← هاد هو اللي يحول الصفحة كاملة RTL
+  },
+});
 const toaster = { position: "top-center" };
 
 useHead({
   meta: [{ name: "viewport", content: "width=device-width, initial-scale=1" }],
   link: [{ rel: "icon", href: "/favicon.ico" }],
   htmlAttrs: {
-    lang: "en",
+    lang: locale.value,
   },
 });
 

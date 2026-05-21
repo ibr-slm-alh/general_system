@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { h, resolveComponent, ref, onMounted } from "vue";
 import type { TableColumn, DropdownMenuItem } from "@nuxt/ui";
+import { roleStore } from "../../store/roleStore";
+import { useAuthStore } from "~~/layers/authentication/app/stores/authStore";
 
+const store = roleStore();
+// console.log("##########", store.hasPermission("roles:create"));
 const UButton = resolveComponent("UButton");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
 const UBadge = resolveComponent("UBadge");
+const authStore = useAuthStore();
+const { t } = useI18n();
 const {
   getRoles,
   roles,
@@ -44,6 +50,10 @@ onMounted(async () => {
   try {
     await Promise.all([getRoles(), getPermissions()]);
     hasAccess.value = true;
+    console.log(
+      "authStore permissions:",
+      JSON.stringify(authStore.permissions),
+    );
   } catch (err: any) {
     const status = err?.response?.status || err?.status;
 
@@ -131,11 +141,11 @@ const confirmDeleteAction = async () => {
 /* ---------------- TABLE ---------------- */
 const columns: TableColumn<any>[] = [
   { accessorKey: "id", header: "#" },
-  { accessorKey: "name", header: "Role Name" },
-  { accessorKey: "display_name", header: "Display Name" },
+  { accessorKey: "name", header: t("role_name") },
+  { accessorKey: "display_name", header: t("display_name") },
   {
     id: "permissions",
-    header: "Permissions",
+    header: t("permissions"),
     cell: ({ row }) => {
       const perms = row.original.permissions || [];
       const visible = perms.slice(0, 3);
@@ -158,17 +168,17 @@ const columns: TableColumn<any>[] = [
       const items: DropdownMenuItem[][] = [
         [
           {
-            label: "Edit Role",
+            label: t("update_role"),
             icon: "lucide:settings",
             onSelect: () => openEditRoleModal(row.original),
           },
           {
-            label: "Edit Permissions",
+            label: t("update_permissions"),
             icon: "lucide:shield",
             onSelect: () => openEditPermissionsModal(row.original),
           },
           {
-            label: "Delete",
+            label: t("delete"),
             icon: "lucide:trash",
             color: "error",
             onSelect: () => openDeleteModal(row.original.id),
@@ -204,18 +214,22 @@ const columns: TableColumn<any>[] = [
     <div v-if="hasAccess">
       <!-- HEADER -->
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold">Roles Page</h2>
+        <h2 class="text-2xl font-bold">{{ t("roles_page") }}</h2>
 
-        <UModal v-model:open="isCreateModalOpen" title="Create Role">
-          <UButton label="Create Role" icon="lucide:plus" />
+        <UModal v-model:open="isCreateModalOpen" :title="t('create_role')">
+          <UButton
+            :label="t('create_role')"
+            v-if="store.hasPermission('roles:create')"
+            icon="lucide:plus"
+          />
 
           <template #body>
             <div class="space-y-4">
-              <UFormField label="Role Name">
+              <UFormField :label="t('role_name')">
                 <UInput v-model="newRole.name" class="w-full" />
               </UFormField>
 
-              <UFormField label="Display Name">
+              <UFormField :label="t('display_name')">
                 <UInput v-model="newRole.display_name" class="w-full" />
               </UFormField>
 
@@ -233,19 +247,19 @@ const columns: TableColumn<any>[] = [
       </UCard>
 
       <!-- EDIT ROLE -->
-      <UModal v-model:open="isEditRoleModalOpen" title="Edit Role">
+      <UModal v-model:open="isEditRoleModalOpen" :title="t('update_role')">
         <template #body>
           <div class="space-y-4">
-            <UFormField label="Role Name">
+            <UFormField :label="t('role_name')">
               <UInput v-model="current_role.name" class="w-full" />
             </UFormField>
 
-            <UFormField label="Display Name">
+            <UFormField :label="t('display_name')">
               <UInput v-model="current_role.display_name" class="w-full" />
             </UFormField>
 
             <UButton block :loading="loading" @click="updateRoleInfo">
-              Update Role
+              {{ t("update_role") }}
             </UButton>
           </div>
         </template>
@@ -258,7 +272,7 @@ const columns: TableColumn<any>[] = [
       >
         <template #body>
           <div class="space-y-4">
-            <UFormField label="Permissions">
+            <UFormField :label="t('permissions')">
               <USelectMenu
                 v-model="permissions"
                 :items="allPermissions"
@@ -271,22 +285,22 @@ const columns: TableColumn<any>[] = [
               <UInputTags v-model="permissions" class="w-full" />
             </UFormField>
             <UButton block :loading="loading" @click="updatePermissions">
-              Update Permissions
+              {{ t("update_permissions") }}
             </UButton>
           </div>
         </template>
       </UModal>
 
       <!-- DELETE -->
-      <UModal v-model:open="isDeleteOpen" title="Delete Role">
+      <UModal v-model:open="isDeleteOpen" :title="t('delete_role')">
         <template #body>
           <p class="text-sm text-muted">
-            Are you sure you want to delete this role?
+            {{ t("confirm_delete") }}
           </p>
 
           <div class="flex justify-end gap-2 mt-4">
             <UButton variant="soft" @click="isDeleteOpen = false">
-              Cancel
+              {{ t("cancel") }}
             </UButton>
 
             <UButton
@@ -294,7 +308,7 @@ const columns: TableColumn<any>[] = [
               :loading="loading"
               @click="confirmDeleteAction"
             >
-              Delete
+              {{ t("delete") }}
             </UButton>
           </div>
         </template>

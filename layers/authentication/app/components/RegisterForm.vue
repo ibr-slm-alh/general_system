@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { useRegister } from "#layers/authentication/app/composables/auth/useRegister";
+import { useRegister } from "~~/layers/authentication/app/composables/useRegister";
 import {
   registerSchema,
   type RegisterSchema,

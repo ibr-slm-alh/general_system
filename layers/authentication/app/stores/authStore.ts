@@ -8,7 +8,7 @@ export const useAuthStore = defineStore("auth", () => {
   const permissions = ref<Permission[]>([]);
 
   const token = useCookie<string | null>("auth_token", {
-    default: () => null,
+    // default: () => null,
   });
 
   const isAuthenticated = computed(() => !!token.value);
@@ -21,6 +21,10 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = payload.user;
     permissions.value = payload.permissions;
     token.value = payload.access_token;
+  };
+
+  const setUser = (payload) => {
+    user.value = payload;
   };
 
   const clearAuth = () => {
@@ -47,6 +51,7 @@ export const useAuthStore = defineStore("auth", () => {
     token,
     isAuthenticated,
     setAuth,
+    setUser,
     clearAuth,
     logoutRequest,
   };

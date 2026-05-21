@@ -1,0 +1,19 @@
+{
+  "roles": "Roles",
+  "role": "Role",
+  "role_name": "Role Name",
+  "create_role": "Create ROle",
+  "update_role": "Edit ROle",
+  "delete_role": "Delete Role",
+  "display_name": "Display Name",
+  "permissions": "Permissions",
+  "update_permissions": " Update Permissions",
+  "edit": "Edit",
+  "create": "Create",
+  "delete": "Delete",
+  "confirm_delete": "Confirm Delete ",
+  "cancel": "Cancel",
+  "home": "Home",
+  "logout": "Logout ",
+  "roles_page": "Roles Page "
+}

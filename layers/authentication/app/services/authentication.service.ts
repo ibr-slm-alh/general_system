@@ -37,6 +37,10 @@ export function authenticationService() {
     });
   }
 
+  async function me() {
+    return await $api("/me");
+  }
+
   async function forgetPassword(email: string) {
     return await $api(`/forget-password`, {
       method: "POST",
@@ -67,6 +71,7 @@ export function authenticationService() {
     register,
     loginRequest,
     logoutRequest,
+    me,
     forgetPassword,
     resetPassword,
   };

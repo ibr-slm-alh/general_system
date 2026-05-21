@@ -1,15 +1,26 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ["@nuxt/eslint", "@nuxt/ui", "@pinia/nuxt"],
+  modules: ["@nuxt/eslint", "@nuxt/ui", "@pinia/nuxt", "@nuxtjs/i18n"],
 
-  extends: ["./layers/authentication", "./layers/authorization"],
+  extends: [
+    "./layers/shared",
+    "./layers/authentication",
+    "./layers/authorization",
+  ],
 
   devtools: {
     enabled: true,
   },
 
   css: ["~/assets/css/main.css"],
-
+  i18n: {
+    langDir: "./locales",
+    locales: [
+      { code: "en", language: "en", file: "en.json" },
+      { code: "ar", language: "ar", file: "ar.json" },
+    ],
+    defaultLocale: "ar",
+  },
   routeRules: {
     "/": { prerender: true },
   },

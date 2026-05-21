@@ -9,6 +9,7 @@ export function useAuthorization() {
   async function getRoles() {
     const response = await useAuthorizationService().fetchRoles();
     store.setRoles(response.data);
+    console.log(roleStore.name);
   }
 
   async function createRole(payload: createRolePayload) {
@@ -67,7 +68,7 @@ export function useAuthorization() {
 
   async function getPermissions() {
     const res = await useAuthorizationService().fetchPermissions();
-
+    store.setPermissions(res.data);
     allPermissions.value = res.data.map((p: any) => p.name);
   }
   return {
