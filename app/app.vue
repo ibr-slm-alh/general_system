@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import * as locales from "@nuxt/ui/locale";
 
 const { locale } = useI18n();
@@ -38,6 +38,7 @@ useSeoMeta({
 <template>
   <UApp :toaster="toaster">
     <NuxtLayout>
+      <UButton @click="ws.send(`asdf`)">SEND TO SOCKET</UButton>
       <NuxtPage />
     </NuxtLayout>
   </UApp>

@@ -16,8 +16,10 @@
     "@nuxt/ui": "^4.7.1",
     "@nuxtjs/i18n": "^10.3.0",
     "@pinia/nuxt": "^0.11.3",
+    "laravel-echo": "^2.3.4",
     "nuxt": "^4.4.4",
     "pinia": "^3.0.4",
+    "pusher-js": "^8.5.0",
     "tailwindcss": "^4.2.4",
     "zod": "^4.4.3"
   },

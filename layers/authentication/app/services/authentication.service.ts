@@ -1,3 +1,5 @@
+import { useAuthStore } from "../stores/authStore";
+
 import type {
   RegisterPayload,
   RegisterResponse,
@@ -7,38 +9,49 @@ import type {
 
 export function authenticationService() {
   const { $api } = useNuxtApp();
-  async function register(payload: RegisterPayload): Promise<RegisterResponse> {
-    const response = await $api<RegisterResponse>("/register", {
-      method: "POST",
 
+  const authStore = useAuthStore();
+
+  async function register(payload: RegisterPayload): Promise<RegisterResponse> {
+    return await $api<RegisterResponse>("/register", {
+      method: "POST",
       body: payload,
+    });
+  }
+
+  async function login(payload: { email: string; password: string }) {
+    const response = await $api<LoginResponse>("/login", {
+      method: "POST",
+      body: payload,
+    });
+
+    const { user, tokens } = response.data;
+
+    authStore.setAuth({
+      user,
+      access_token: tokens.access_token,
     });
 
     return response;
   }
 
-  async function loginRequest(email: string, password: string) {
-    return await $api<LoginResponse>("/login", {
-      method: "POST",
-      body: {
-        email,
-        password,
-      },
-    });
-  }
-
-  async function logoutRequest(token: string) {
-    return await $api<LogoutResponse>("/logout", {
+  async function logout() {
+    await $api<LogoutResponse>("/logout", {
       method: "POST",
       headers: {
         Accept: "application/json",
-        // Authorization: `Bearer ${token}`,
       },
     });
+
+    authStore.clearAuth();
   }
 
   async function me() {
-    return await $api("/me");
+    const response = await $api("/me");
+
+    authStore.setUser(response.data);
+
+    return response;
   }
 
   async function forgetPassword(email: string) {
@@ -51,7 +64,6 @@ export function authenticationService() {
     });
   }
 
-  // 2) Reset Password
   async function resetPassword(payload: {
     token: string;
     email: string;
@@ -69,8 +81,8 @@ export function authenticationService() {
 
   return {
     register,
-    loginRequest,
-    logoutRequest,
+    login,
+    logout,
     me,
     forgetPassword,
     resetPassword,

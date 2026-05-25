@@ -1,77 +1,21 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted, onUnmounted } from "vue";
-import { useAuthStore } from "#layers/authentication/app/stores/authStore";
-import { authenticationService } from "#layers/authentication/app/services/authentication.service";
+import { reactive } from "vue";
+
+import { useAuth } from "../composables/useAuth";
+
 import {
   loginSchema,
   type loginSchema as LoginSchema,
-} from "#layers/authentication/app/schemas/auth.schema";
+} from "../schemas/auth.schema";
 
-definePageMeta({
-  layout: "auth",
-});
+const { login, loading, error } = useAuth();
 
 const state = reactive<LoginSchema>({
   email: "",
   password: "",
 });
-
-const { loginRequest } = authenticationService();
-const authStore = useAuthStore();
-
-const loading = ref(false);
-const error = ref("");
-
-const isOnline = ref(true);
-
-const updateOnlineStatus = () => {
-  isOnline.value = navigator.onLine;
-};
-
-onMounted(() => {
-  isOnline.value = navigator.onLine;
-  window.addEventListener("online", updateOnlineStatus);
-  window.addEventListener("offline", updateOnlineStatus);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("online", updateOnlineStatus);
-  window.removeEventListener("offline", updateOnlineStatus);
-});
-
-const login = async () => {
-  try {
-    loading.value = true;
-    error.value = "";
-
-    if (!isOnline.value) {
-      error.value = "No internet connection. Please check your network.";
-      return;
-    }
-
-    loginSchema.parse(state);
-
-    const response = await loginRequest(state.email, state.password);
-
-    authStore.setAuth({
-      user: response.data.user,
-      permissions: response.data.permissions,
-      access_token: response.data.token.access_token,
-    });
-
-    // redirect
-    await navigateTo("/");
-  } catch (err: any) {
-    console.log(err);
-
-    error.value =
-      err?.data?.message ||
-      err?.response?._data?.message ||
-      err?.message ||
-      "Login failed";
-  } finally {
-    loading.value = false;
-  }
+const onSubmit = async () => {
+  await login(state);
 };
 </script>
 
@@ -100,7 +44,7 @@ const login = async () => {
         :schema="loginSchema"
         :state="state"
         class="space-y-4"
-        @submit="login"
+        @submit="onSubmit"
       >
         <UFormField label="Email" name="email">
           <UInput

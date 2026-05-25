@@ -19,7 +19,7 @@ export default defineNuxtConfig({
       { code: "en", language: "en", file: "en.json" },
       { code: "ar", language: "ar", file: "ar.json" },
     ],
-    defaultLocale: "ar",
+    defaultLocale: "en",
   },
   routeRules: {
     "/": { prerender: true },
@@ -38,6 +38,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "http://localhost:8085/api",
+      reverbHost: "localhost",
+      reverbPort: "8080",
     },
   },
 });

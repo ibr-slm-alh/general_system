@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { useAuthStore } from "~~/layers/authentication/app/stores/authStore";
 import * as locales from "@nuxt/ui/locale";
 
 const { t, locale, setLocale } = useI18n();
-console.log("Locale ###########3", locale);
+const { logout } = useAuth();
+
 // ─── RTL detection ────────────────────────────────────────────
 const isRTL = computed(() => locale.value === "ar");
 
-// Sync <html dir="..."> whenever locale changes
 watch(
   isRTL,
   (rtl) => {
@@ -26,6 +25,7 @@ const isMobile = ref(false);
 
 onMounted(() => {
   const mq = window.matchMedia("(max-width: 767px)");
+
   isMobile.value = mq.matches;
   open.value = !mq.matches;
 
@@ -35,19 +35,12 @@ onMounted(() => {
   });
 });
 
-// ─── Auth ─────────────────────────────────────────────────────
-const authStore = useAuthStore();
-const logout = async () => {
-  await authStore.logoutRequest();
-};
-
 // ─── Navigation items ─────────────────────────────────────────
 const items: NavigationMenuItem[] = [
   {
     label: t("home"),
     to: "/",
     icon: "i-lucide-house",
-    active: true,
   },
   {
     label: "Profile",
@@ -64,37 +57,40 @@ const items: NavigationMenuItem[] = [
     icon: "i-lucide-log-out",
     class: "text-red-400 rounded hover:bg-red-50 font-semibold",
     async onSelect() {
-      logout();
+      await logout();
     },
   },
 ];
 
+// ─── Bottom navigation ────────────────────────────────────────
 const bottomNavItems = [
   { label: t("Home"), icon: "i-lucide-house", to: "/" },
   { label: t("Inbox"), icon: "i-lucide-inbox", to: "/inbox", badge: "4" },
   { label: t("Users"), icon: "i-lucide-users", to: "/authentication/register" },
-  { label: t("Logout"), icon: "i-lucide-log-out", action: logout },
+  {
+    label: t("Logout"),
+    icon: "i-lucide-log-out",
+    action: async () => {
+      await logout();
+    },
+  },
 ];
 
-// ─── Sidebar side: right in RTL, left in LTR ─────────────────
-// USidebar supports a `side` prop ("left" | "right")
-const sidebarSide = computed(() => locales[locale.value].dir);
+// ─── Sidebar side (RTL/LTR) ───────────────────────────────────
+const sidebarSide = computed(() => (isRTL.value ? "right" : "left"));
 </script>
 
 <template>
-  <!--
-    dir is set on <html> via the watcher above.
-    The `dir` attribute here covers SSR hydration.
-  -->
-  <div class="flex flex-col flex-1" :dir="locale == 'en' ? 'ltr' : 'rtl'">
-    <!-- ─── Top header ──────────────────────────────────────── -->
+  <div class="flex flex-col flex-1" :dir="isRTL ? 'rtl' : 'ltr'">
+    <!-- ─── Header ───────────────────────────────────────────── -->
     <UHeader :ui="{ container: 'px-4!' }">
       <!-- Language toggle -->
       <UButton
         :label="locale == 'en' ? 'العربية' : 'English'"
         @click="setLocale(locale == 'en' ? 'ar' : 'en')"
       />
-      <!-- Sidebar toggle (desktop) — flips side via the sidebar state -->
+
+      <!-- Sidebar toggle -->
       <template #toggle>
         <UButton
           class="hidden md:flex"
@@ -102,33 +98,24 @@ const sidebarSide = computed(() => locales[locale.value].dir);
           color="neutral"
           variant="ghost"
           :class="{ 'scale-x-[-1]': isRTL }"
-          aria-label="Toggle sidebar"
           @click="open = !open"
         />
       </template>
 
-      <!-- Mobile hamburger -->
+      <!-- Mobile menu -->
       <template #right>
         <UButton
           class="flex md:hidden"
           icon="i-lucide-menu"
           color="neutral"
           variant="ghost"
-          aria-label="Open menu"
           @click="open = !open"
         />
       </template>
     </UHeader>
 
-    <!-- ─── Body ────────────────────────────────────────────── -->
+    <!-- ─── Body ─────────────────────────────────────────────── -->
     <div class="flex flex-1 min-h-0">
-      <!--
-        USidebar:
-        - `side` prop controls which edge the sidebar lives on.
-        - Switches to "right" in Arabic (RTL) and "left" in English (LTR).
-        - Mobile: offcanvas overlay from the correct side.
-        - Desktop: icon-collapsible persistent sidebar.
-      -->
       <USidebar
         v-model:open="open"
         :side="sidebarSide"
@@ -146,30 +133,28 @@ const sidebarSide = computed(() => locales[locale.value].dir);
         />
       </USidebar>
 
-      <!-- ─── Page content ───────────────────────────────── -->
+      <!-- Page content -->
       <div class="flex-1 p-4 pb-20 md:pb-4 overflow-y-auto">
         <slot />
       </div>
     </div>
 
-    <!-- ─── Bottom navigation (mobile only) ─────────────────── -->
+    <!-- ─── Bottom nav ───────────────────────────────────────── -->
     <nav
       class="fixed bottom-0 inset-x-0 z-50 flex md:hidden h-16 bg-primary-50 border-t border-default safe-area-pb"
-      aria-label="Mobile navigation"
     >
       <template v-for="item in bottomNavItems" :key="item.label">
-        <!-- Items with a route -->
         <NuxtLink
           v-if="item.to"
           :to="item.to"
-          class="relative flex flex-1 flex-col items-center justify-center gap-0.5 text-muted hover:text-default transition-colors"
+          class="flex flex-1 flex-col items-center justify-center gap-0.5 text-muted hover:text-default"
           active-class="text-primary"
         >
           <span class="relative">
             <UIcon :name="item.icon" class="h-5 w-5" />
             <span
               v-if="item.badge"
-              class="absolute -top-1 -end-2 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-medium leading-4 text-center"
+              class="absolute -top-1 -end-2 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px]"
             >
               {{ item.badge }}
             </span>
@@ -177,10 +162,9 @@ const sidebarSide = computed(() => locales[locale.value].dir);
           <span class="text-[10px] font-medium">{{ item.label }}</span>
         </NuxtLink>
 
-        <!-- Items with an action (logout) -->
         <button
           v-else-if="item.action"
-          class="flex flex-1 flex-col items-center justify-center gap-0.5 text-red-400 hover:text-red-500 transition-colors"
+          class="flex flex-1 flex-col items-center justify-center gap-0.5 text-red-400"
           @click="item.action"
         >
           <UIcon :name="item.icon" class="h-5 w-5" />

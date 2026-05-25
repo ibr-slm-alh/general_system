@@ -17,22 +17,21 @@ export const useRegister = () => {
 
       const response = await authService.register(payload);
 
+      if (!response?.success) {
+        throw response;
+      }
+
       authStore.setAuth({
         user: response.data.user,
         permissions: response.data.permissions,
-        access_token: response.data.token.access_token,
+        access_token: response.data.token?.access_token ?? null,
       });
 
       return response;
     } catch (err: any) {
-      console.log("REGISTER COMPOSABLE ERROR:", err);
-
-      // 🔥 أهم إصلاح: توحيد شكل الخطأ
       const normalizedError = err?.data || err?.response?._data || err;
-
       error.value = normalizedError;
-
-      throw normalizedError; // مهم جداً للصفحة
+      throw normalizedError;
     } finally {
       loading.value = false;
     }
